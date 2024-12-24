@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import User from "../model/user";
 import { authToken, refreshtToken } from "../utils/getSignedToken";
 import { generateCookie } from "../utils/generateCookie";
+import jwt, { JwtPayload } from "jsonwebtoken";
 
 export const login = async (
   req: Request,
@@ -41,4 +42,53 @@ export const register = async (
   } catch (error) {
     next(error);
   }
+};
+
+export const generateRefreshToken = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const refresh_token = req.cookies.refresh_token;
+  if (!refresh_token) {
+    return res.status(401).json({ message: "No refresh token provided" });
+  }
+  try {
+    const decodedRefreshToken = jwt.verify(
+      refresh_token,
+      process.env.REFRESH_TOKEN_SECRET as string
+    );
+
+    if (!decodedRefreshToken) {
+      return res.status(403).json({ message: "invalid refresh token" });
+    }
+
+    const userId = (decodedRefreshToken as JwtPayload).id; // Extract the `id` from the decoded token
+
+    // Ensure `findUnique` uses the correct syntax
+    // const user = await db.user.findUnique({
+    //   where: { id: userId.toString() },
+    // });
+    const user = await User.findById(userId.toString());
+
+    if (!user) {
+      res.clearCookie("token");
+      res.clearCookie("refresh_token");
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const token = authToken(userId.toString());
+    const refreshToken = refreshtToken(userId.toString());
+    generateCookie(res, token, refreshToken);
+    return res.status(200).json({ success: true, refreshToken, token });
+  } catch (error) {
+    console.log("error", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const me = async (req: Request, res: Response) => {
+  const user = await User.findById(req.userId, "name");
+  // const user = await User.findById(req.userId);
+  return res.status(200).json({ message: "succces", user });
 };
