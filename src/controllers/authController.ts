@@ -92,3 +92,27 @@ export const me = async (req: Request, res: Response) => {
   // const user = await User.findById(req.userId);
   return res.status(200).json({ message: "succces", user });
 };
+
+export const logout = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    console.log("Before clearing:", req.cookies.token);
+    res.clearCookie("token");
+    // res.clearCookie("token", {
+    //   path: "/",
+    //   httpOnly: true,
+    //   domain: process.env.COOKIE_DOMAIN, // or the appropriate domain for your frontend
+    //   secure: true,
+    //   sameSite: "none",
+    // });
+    return res
+      .status(200)
+      .json({ success: "true", message: "logout succcessfully" });
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};

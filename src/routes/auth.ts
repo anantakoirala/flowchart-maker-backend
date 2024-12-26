@@ -2,6 +2,7 @@ import express, { Response, Request } from "express";
 import {
   generateRefreshToken,
   login,
+  logout,
   me,
   register,
 } from "../controllers/authController";
@@ -16,5 +17,6 @@ router.post("/login", validate(userLoginSchema), login);
 router.post("/register", validate(userRegisterSchema), register);
 router.get("/me", authMiddleware, me);
 router.post("/refresh-token", generateRefreshToken);
+router.get("/logout", authMiddleware, logout);
 
 export default router;

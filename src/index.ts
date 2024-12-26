@@ -4,6 +4,7 @@ dotenv.config();
 import connectDB from "./utils/db";
 
 import authRoutes from "./routes/auth";
+import teamRoutes from "./routes/team";
 import errorResponse from "./middleware/errorResponse";
 import cookieParser from "cookie-parser";
 import cors from "cors";
@@ -24,6 +25,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/team", teamRoutes);
 
 app.use(errorResponse);
 
