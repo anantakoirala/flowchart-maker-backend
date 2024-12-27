@@ -37,7 +37,6 @@ export const myTeams = async (
 ) => {
   try {
     const userId = req.userId;
-    console.log("userId", userId);
     if (!req.userId) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }

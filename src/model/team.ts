@@ -6,6 +6,7 @@ const teamSchema = new mongoose.Schema(
     owner: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
+      required: [true, "Team owner is required"],
     },
     members: [
       {
