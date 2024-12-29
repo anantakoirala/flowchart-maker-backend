@@ -89,7 +89,11 @@ export const generateRefreshToken = async (
 
 export const me = async (req: Request, res: Response) => {
   const user = await User.findById(req.userId, "name");
+
   // const user = await User.findById(req.userId);
+  if (!user) {
+    return res.status(401).json({ success: false, message: "Unauthorized" });
+  }
   return res.status(200).json({ message: "succces", user });
 };
 

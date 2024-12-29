@@ -69,14 +69,20 @@ export const getTeamsFile = async (
     if (!req.userId) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
-    const teamFiles = await File.find({ teamId: teamId });
-    return res
-      .status(200)
-      .json({
-        success: true,
-        message: "succcess",
-        totalNumberOfFiles: teamFiles.length,
+    const teamFiles = await File.find({ teamId: teamId })
+      .sort({ createdAt: -1 })
+      .select("title createdAt updatedAt createdBy")
+      .populate({
+        path: "createdBy",
+        select: "email", // Include only the `name` field from the `User` model
       });
+
+    return res.status(200).json({
+      success: true,
+      message: "succcess",
+      totalNumberOfFiles: teamFiles.length,
+      files: teamFiles,
+    });
   } catch (error) {
     next(error);
   }
