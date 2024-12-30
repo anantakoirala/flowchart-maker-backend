@@ -87,3 +87,83 @@ export const getTeamsFile = async (
     next(error);
   }
 };
+
+export const updateFile = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params;
+    const { document } = req.body;
+
+    if (!req.userId) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+    const userId = req.userId;
+    const file = await File.findById(id);
+    if (!file) {
+      return res
+        .status(404)
+        .json({ success: false, message: "File not found" });
+    }
+
+    // Check if the file is associated with a team
+    if (!file.teamId) {
+      return res.status(400).json({
+        success: false,
+        message: "File is not associated with a team",
+      });
+    }
+
+    // Find the team
+    const team = await Team.findById(file.teamId);
+    if (!team) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Team not found" });
+    }
+
+    // Check if the user belongs to the team
+    const isMember = team.members.some(
+      (member) => member.toString() === userId.toString()
+    );
+    if (!isMember) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not authorized to update this file",
+      });
+    }
+
+    file.document = document;
+    await file.save();
+
+    return res.status(200).json({ success: true, document: file.document });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getIndividualFileData = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { fileId } = req.params;
+
+    if (!req.userId) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+    const file = await File.findById(fileId);
+
+    if (!file) {
+      return res
+        .status(404)
+        .json({ success: false, message: "File not found" });
+    }
+    return res.status(200).json({ success: true, file });
+  } catch (error) {
+    next(error);
+  }
+};
